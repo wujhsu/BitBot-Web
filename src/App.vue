@@ -55,7 +55,7 @@
 
 .app-main {
   padding: 0;
-  overflow: hidden;
+  overflow: auto;
 }
 </style>
 

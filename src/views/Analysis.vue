@@ -135,13 +135,20 @@ const fileId = computed(() => {
 const fetchTaskStatus = async () => {
   try {
     const task = await getAnalysisStatus(taskId.value)
+    const oldStep = currentTask.value?.progress?.current_step
+
     analysisStore.updateTaskStatus(task)
-    
+
+    // 如果步骤发生了变化，在控制台记录（用于调试）
+    if (oldStep && oldStep !== task.progress?.current_step) {
+      console.log(`分析进度更新: ${oldStep} → ${task.progress?.current_step}`)
+    }
+
     // 如果任务完成或失败，停止轮询
     if (task.status === 'completed' || task.status === 'failed') {
       stopPolling()
     }
-    
+
   } catch (error: any) {
     console.error('Fetch task status error:', error)
     analysisStore.setAnalysisError(error.error_message || '获取任务状态失败')
@@ -159,13 +166,32 @@ const refreshStatus = async () => {
 }
 
 const startPolling = () => {
-  // 每3秒轮询一次状态
-  pollingTimer.value = window.setInterval(fetchTaskStatus, 3000)
+  // 简化的轮询逻辑，每5秒查询一次
+  const poll = async () => {
+    try {
+      await fetchTaskStatus()
+
+      // 如果任务已完成或失败，停止轮询
+      if (currentTask.value?.status === 'completed' || currentTask.value?.status === 'failed') {
+        return
+      }
+
+      // 继续轮询
+      pollingTimer.value = window.setTimeout(poll, 5000)
+    } catch (error) {
+      console.error('Polling error:', error)
+      // 出错时延迟重试
+      pollingTimer.value = window.setTimeout(poll, 10000)
+    }
+  }
+
+  // 延迟开始第一次轮询，避免与初始加载冲突
+  pollingTimer.value = window.setTimeout(poll, 3000)
 }
 
 const stopPolling = () => {
   if (pollingTimer.value) {
-    clearInterval(pollingTimer.value)
+    clearTimeout(pollingTimer.value)
     pollingTimer.value = null
   }
 }
@@ -191,17 +217,26 @@ const formatTime = (timeStr?: string): string => {
 
 // 生命周期
 onMounted(async () => {
+  console.log('Analysis page mounted with taskId:', taskId.value)
+
+  if (!taskId.value) {
+    console.error('No taskId provided')
+    ElMessage.error('任务ID缺失')
+    router.push('/')
+    return
+  }
+
   try {
     // 首次加载任务状态
     await fetchTaskStatus()
-    
+
     // 如果任务还在进行中，开始轮询
-    if (currentTask.value && 
-        currentTask.value.status !== 'completed' && 
+    if (currentTask.value &&
+        currentTask.value.status !== 'completed' &&
         currentTask.value.status !== 'failed') {
       startPolling()
     }
-    
+
   } catch (error: any) {
     console.error('Initial load error:', error)
     ElMessage.error(error.error_message || '加载分析任务失败')
@@ -217,7 +252,7 @@ onUnmounted(() => {
 
 <style scoped>
 .analysis-container {
-  height: calc(100vh - 60px);
+  min-height: calc(100vh - 60px);
   background: transparent;
 }
 
@@ -297,7 +332,7 @@ onUnmounted(() => {
 .dual-pane-layout {
   flex: 1;
   display: flex;
-  height: calc(100vh - 160px);
+  min-height: calc(100vh - 160px);
   gap: 1px;
   background: rgba(0, 0, 0, 0.1);
 }
@@ -365,12 +400,11 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .analysis-container {
-    height: auto;
     min-height: calc(100vh - 60px);
   }
-  
+
   .dual-pane-layout {
-    height: auto;
+    min-height: auto;
   }
   
   .left-pane,

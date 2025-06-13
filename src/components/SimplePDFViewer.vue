@@ -194,7 +194,7 @@ onMounted(() => {
 
 .pdf-content {
   flex: 1;
-  overflow: hidden;
+  overflow: auto;
   position: relative;
 }
 
@@ -220,7 +220,7 @@ onMounted(() => {
   overflow: auto;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   padding: 20px;
 }
 

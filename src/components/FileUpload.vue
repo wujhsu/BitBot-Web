@@ -91,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useUploadStore } from '../stores/upload'
@@ -181,22 +181,40 @@ const handleFileChange = async (file: any) => {
 }
 
 const startAnalysis = async () => {
-  if (!currentFile.value) return
-  
+  if (!currentFile.value) {
+    console.error('No file selected for analysis')
+    return
+  }
+
   try {
     isStartingAnalysis.value = true
-    
+    console.log('Starting analysis for file:', currentFile.value.file_id)
+
     // 启动分析任务
     const task = await apiStartAnalysis(currentFile.value.file_id)
-    
+    console.log('Analysis task created:', task)
+
     // 设置分析任务
     analysisStore.setCurrentTask(task)
-    
+    console.log('Task set in store, current task:', analysisStore.currentTask)
+
     ElMessage.success('分析任务已启动！')
-    
+
     // 跳转到分析页面
-    router.push(`/analysis/${task.task_id}`)
-    
+    console.log('Navigating to analysis page:', `/analysis/${task.task_id}`)
+
+    // 使用nextTick确保状态更新完成后再跳转
+    await nextTick()
+
+    try {
+      const navigationResult = await router.push(`/analysis/${task.task_id}`)
+      console.log('Navigation result:', navigationResult)
+    } catch (navError) {
+      console.error('Navigation error:', navError)
+      // 如果路由跳转失败，尝试使用window.location
+      window.location.href = `/analysis/${task.task_id}`
+    }
+
   } catch (error: any) {
     console.error('Start analysis error:', error)
     ElMessage.error(error.error_message || '启动分析失败')
