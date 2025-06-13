@@ -1,5 +1,5 @@
 <template>
-  <div class="pdf-viewer">
+  <div class="simple-pdf-viewer">
     <!-- 工具栏 -->
     <div class="pdf-toolbar">
       <div class="toolbar-left">
@@ -16,29 +16,14 @@
         </el-button-group>
       </div>
       
-      <div class="toolbar-center">
-        <el-button-group>
-          <el-button size="small" @click="prevPage" :disabled="currentPage <= 1">
-            <el-icon><ArrowLeft /></el-icon>
-          </el-button>
-          <el-input
-            v-model="pageInput"
-            size="small"
-            class="page-input"
-            @keyup.enter="goToPage"
-            @blur="goToPage"
-          />
-          <span class="page-info">/ {{ totalPages }}</span>
-          <el-button size="small" @click="nextPage" :disabled="currentPage >= totalPages">
-            <el-icon><ArrowRight /></el-icon>
-          </el-button>
-        </el-button-group>
-      </div>
-      
       <div class="toolbar-right">
         <el-button size="small" @click="downloadPdf">
           <el-icon><Download /></el-icon>
           下载
+        </el-button>
+        <el-button size="small" @click="openInNewTab">
+          <el-icon><View /></el-icon>
+          新窗口打开
         </el-button>
       </div>
     </div>
@@ -60,24 +45,28 @@
         >
           <template #extra>
             <el-button type="primary" @click="loadPdf">重新加载</el-button>
+            <el-button @click="openInNewTab">新窗口打开</el-button>
           </template>
         </el-result>
       </div>
       
-      <!-- PDF显示区域 -->
+      <!-- PDF显示区域 - 使用iframe作为备选方案 -->
       <div v-else class="pdf-display">
-        <canvas
-          ref="pdfCanvas"
-          class="pdf-canvas"
+        <iframe
+          ref="pdfFrame"
+          :src="pdfUrl"
+          class="pdf-iframe"
           :style="{ transform: `scale(${scale})` }"
-        ></canvas>
+          @load="onIframeLoad"
+          @error="onIframeError"
+        ></iframe>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getPdfUrl, getDownloadUrl } from '../api'
 
@@ -91,18 +80,11 @@ const props = defineProps<Props>()
 // 响应式数据
 const isLoading = ref(true)
 const error = ref<string | null>(null)
-const currentPage = ref(1)
-const totalPages = ref(0)
 const scale = ref(1.0)
-const pageInput = ref('1')
 
 // 组件引用
 const pdfContainer = ref<HTMLElement>()
-const pdfCanvas = ref<HTMLCanvasElement>()
-
-// PDF相关
-let pdfDoc: any = null
-let renderTask: any = null
+const pdfFrame = ref<HTMLIFrameElement>()
 
 // 计算属性
 const pdfUrl = computed(() => {
@@ -121,27 +103,15 @@ const loadPdf = async () => {
     isLoading.value = true
     error.value = null
 
-    // 动态导入PDF.js
-    const pdfjsLib = await import('pdfjs-dist')
+    // 直接让iframe加载PDF，不需要预先验证
+    // iframe的onload和onerror事件会处理加载结果
 
-    // 设置worker路径 - 使用npm包中的worker文件
-    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-      'pdfjs-dist/build/pdf.worker.min.js',
-      import.meta.url
-    ).toString()
-
-    // 加载PDF文档
-    const loadingTask = pdfjsLib.getDocument(pdfUrl.value)
-    pdfDoc = await loadingTask.promise
-
-    totalPages.value = pdfDoc.numPages
-    currentPage.value = 1
-    pageInput.value = '1'
-
-    // 渲染第一页
-    await renderPage(1)
-
-    isLoading.value = false
+    // 设置一个超时，如果iframe没有触发load事件，则停止loading状态
+    setTimeout(() => {
+      if (isLoading.value) {
+        isLoading.value = false
+      }
+    }, 3000)
 
   } catch (err: any) {
     console.error('PDF loading error:', err)
@@ -150,68 +120,14 @@ const loadPdf = async () => {
   }
 }
 
-const renderPage = async (pageNum: number) => {
-  if (!pdfDoc || !pdfCanvas.value) return
-
-  try {
-    // 取消之前的渲染任务
-    if (renderTask) {
-      renderTask.cancel()
-    }
-
-    const page = await pdfDoc.getPage(pageNum)
-    const canvas = pdfCanvas.value
-    const context = canvas.getContext('2d')
-
-    // 计算视口
-    const viewport = page.getViewport({ scale: 1.5 })
-    
-    // 设置canvas尺寸
-    canvas.height = viewport.height
-    canvas.width = viewport.width
-
-    // 渲染页面
-    const renderContext = {
-      canvasContext: context,
-      viewport: viewport
-    }
-
-    renderTask = page.render(renderContext)
-    await renderTask.promise
-    renderTask = null
-
-  } catch (err: any) {
-    if (err.name !== 'RenderingCancelledException') {
-      console.error('Page rendering error:', err)
-      ElMessage.error('页面渲染失败')
-    }
-  }
+const onIframeLoad = () => {
+  isLoading.value = false
+  error.value = null
 }
 
-const prevPage = async () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
-    pageInput.value = currentPage.value.toString()
-    await renderPage(currentPage.value)
-  }
-}
-
-const nextPage = async () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-    pageInput.value = currentPage.value.toString()
-    await renderPage(currentPage.value)
-  }
-}
-
-const goToPage = async () => {
-  const pageNum = parseInt(pageInput.value)
-  if (pageNum >= 1 && pageNum <= totalPages.value && pageNum !== currentPage.value) {
-    currentPage.value = pageNum
-    await renderPage(pageNum)
-  } else {
-    pageInput.value = currentPage.value.toString()
-  }
+const onIframeError = () => {
+  isLoading.value = false
+  error.value = 'PDF文件加载失败，可能是文件格式不支持或网络问题'
 }
 
 const zoomIn = () => {
@@ -237,6 +153,12 @@ const downloadPdf = () => {
   }
 }
 
+const openInNewTab = () => {
+  if (pdfUrl.value) {
+    window.open(pdfUrl.value, '_blank')
+  }
+}
+
 // 监听器
 watch(() => props.fileId, (newFileId) => {
   if (newFileId) {
@@ -253,7 +175,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.pdf-viewer {
+.simple-pdf-viewer {
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -270,25 +192,9 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.toolbar-center {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.page-input {
-  width: 60px;
-}
-
-.page-info {
-  font-size: 14px;
-  color: #606266;
-  margin-left: 8px;
-}
-
 .pdf-content {
   flex: 1;
-  overflow: auto;
+  overflow: hidden;
   position: relative;
 }
 
@@ -310,17 +216,23 @@ onMounted(() => {
 }
 
 .pdf-display {
+  height: 100%;
+  overflow: auto;
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: 20px;
-  min-height: 100%;
 }
 
-.pdf-canvas {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.pdf-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
   background: white;
-  transform-origin: top center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform-origin: center;
   transition: transform 0.2s ease;
+  min-height: 600px;
 }
 
 /* 响应式设计 */
@@ -332,7 +244,6 @@ onMounted(() => {
   }
   
   .toolbar-left,
-  .toolbar-center,
   .toolbar-right {
     width: 100%;
     justify-content: center;
@@ -340,6 +251,10 @@ onMounted(() => {
   
   .pdf-display {
     padding: 10px;
+  }
+  
+  .pdf-iframe {
+    min-height: 400px;
   }
 }
 </style>

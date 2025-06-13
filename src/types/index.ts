@@ -43,6 +43,13 @@ export interface ExtractedField {
   notes?: string
 }
 
+export interface QualificationCriteria {
+  company_certifications: ExtractedField[]
+  project_experience: ExtractedField[]
+  team_requirements: ExtractedField[]
+  other_requirements: ExtractedField[]
+}
+
 export interface BasicInformation {
   project_name: ExtractedField
   tender_number: ExtractedField
@@ -55,6 +62,7 @@ export interface BasicInformation {
   purchaser_contact: ExtractedField
   agent_name: ExtractedField
   agent_contact: ExtractedField
+  qualification_criteria: QualificationCriteria
 }
 
 export interface ScoreComposition {

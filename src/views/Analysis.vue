@@ -58,7 +58,7 @@
               </div>
             </template>
             <div class="pdf-viewer">
-              <PDFViewer :file-id="fileId" />
+              <SimplePDFViewer :file-id="fileId" />
             </div>
           </el-card>
         </div>
@@ -103,7 +103,7 @@ import { ElMessage } from 'element-plus'
 import { useAnalysisStore } from '../stores/analysis'
 import { getAnalysisStatus } from '../api'
 import ProgressIndicator from '../components/ProgressIndicator.vue'
-import PDFViewer from '../components/PDFViewer.vue'
+import SimplePDFViewer from '../components/SimplePDFViewer.vue'
 import AnalysisResult from '../components/AnalysisResult.vue'
 
 // 路由和状态
