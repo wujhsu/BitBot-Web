@@ -1,5 +1,5 @@
 <template>
-  <div class="other-info-section">
+  <div class="contract-info-section">
     <!-- 合同条款 -->
     <el-card class="info-card" shadow="never">
       <template #header>
@@ -93,20 +93,20 @@
 </template>
 
 <script setup lang="ts">
-import type { OtherInformation } from '../../types'
+import type { ContractInformation } from '../../types'
 import FieldDisplay from '../common/FieldDisplay.vue'
 import FieldList from '../common/FieldList.vue'
 
 // Props
 interface Props {
-  otherInfo: OtherInformation
+  otherInfo: ContractInformation
 }
 
 defineProps<Props>()
 </script>
 
 <style scoped>
-.other-info-section {
+.contract-info-section {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -154,7 +154,7 @@ defineProps<Props>()
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .other-info-section {
+  .contract-info-section {
     gap: 15px;
   }
   

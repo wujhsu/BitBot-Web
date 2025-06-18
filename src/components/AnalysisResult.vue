@@ -29,26 +29,15 @@
           <ScoringSection :scoring-criteria="result.scoring_criteria" />
         </el-tab-pane>
         
-        <!-- 其他信息 -->
-        <el-tab-pane label="其他信息" name="other">
+        <!-- 合同信息 -->
+        <el-tab-pane label="合同信息" name="contract">
           <template #label>
             <span class="tab-label">
               <el-icon><More /></el-icon>
-              其他信息
+              合同信息
             </span>
           </template>
-          <OtherInfoSection :other-info="result.other_information" />
-        </el-tab-pane>
-        
-        <!-- 处理说明 -->
-        <el-tab-pane label="处理说明" name="notes">
-          <template #label>
-            <span class="tab-label">
-              <el-icon><Document /></el-icon>
-              处理说明
-            </span>
-          </template>
-          <ProcessingNotesSection :notes="result.processing_notes" />
+          <OtherInfoSection :other-info="result.contract_information" />
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -61,7 +50,6 @@ import type { AnalysisResult } from '../types'
 import BasicInfoSection from './result-sections/BasicInfoSection.vue'
 import ScoringSection from './result-sections/ScoringSection.vue'
 import OtherInfoSection from './result-sections/OtherInfoSection.vue'
-import ProcessingNotesSection from './result-sections/ProcessingNotesSection.vue'
 
 // Props
 interface Props {

@@ -36,6 +36,10 @@
           </p>
         </div>
         <div class="header-actions">
+          <el-button @click="toggleLayout" :type="isLayoutSwapped ? 'primary' : 'default'">
+            <el-icon><Switch /></el-icon>
+            切换布局
+          </el-button>
           <el-button @click="goHome">
             <el-icon><ArrowLeft /></el-icon>
             返回首页
@@ -47,25 +51,22 @@
         </div>
       </div>
       
-      <div class="dual-pane-layout">
-        <!-- 左栏：PDF预览 -->
-        <div class="left-pane">
-          <el-card class="pdf-viewer-card" shadow="never">
+      <div ref="dualPaneContainer" class="dual-pane-layout" :class="{ 'layout-swapped': isLayoutSwapped }">
+        <!-- 左栏：根据布局状态显示不同内容 -->
+        <div class="left-pane" :class="{ 'pdf-fixed': isPdfFixed && !isLayoutSwapped }">
+          <el-card class="pdf-viewer-card" shadow="never" v-if="!isLayoutSwapped">
             <template #header>
               <div class="card-header">
                 <el-icon><View /></el-icon>
                 <span>原文预览</span>
               </div>
             </template>
-            <div class="pdf-viewer">
+            <div class="pdf-viewer" :style="pdfViewerStyle">
               <SimplePDFViewer :file-id="fileId" />
             </div>
           </el-card>
-        </div>
-        
-        <!-- 右栏：分析结果 -->
-        <div class="right-pane">
-          <el-card class="analysis-result-card" shadow="never">
+
+          <el-card class="analysis-result-card" shadow="never" v-else>
             <template #header>
               <div class="card-header">
                 <el-icon><DataAnalysis /></el-icon>
@@ -74,6 +75,33 @@
             </template>
             <div class="analysis-content">
               <AnalysisResult :result="analysisResult" />
+            </div>
+          </el-card>
+        </div>
+
+        <!-- 右栏：根据布局状态显示不同内容 -->
+        <div class="right-pane" :class="{ 'pdf-fixed': isPdfFixed && isLayoutSwapped }">
+          <el-card class="analysis-result-card" shadow="never" v-if="!isLayoutSwapped">
+            <template #header>
+              <div class="card-header">
+                <el-icon><DataAnalysis /></el-icon>
+                <span>分析结果</span>
+              </div>
+            </template>
+            <div class="analysis-content">
+              <AnalysisResult :result="analysisResult" />
+            </div>
+          </el-card>
+
+          <el-card class="pdf-viewer-card" shadow="never" v-else>
+            <template #header>
+              <div class="card-header">
+                <el-icon><View /></el-icon>
+                <span>原文预览</span>
+              </div>
+            </template>
+            <div class="pdf-viewer" :style="pdfViewerStyle">
+              <SimplePDFViewer :file-id="fileId" />
             </div>
           </el-card>
         </div>
@@ -97,7 +125,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAnalysisStore } from '../stores/analysis'
@@ -116,6 +144,12 @@ const isLoading = ref(true)
 const isRefreshing = ref(false)
 const pollingTimer = ref<number | null>(null)
 
+// 布局和滚动相关
+const isLayoutSwapped = ref(false)
+const isPdfFixed = ref(false)
+const dualPaneContainer = ref<HTMLElement>()
+const headerHeight = 160 // 头部高度，根据实际情况调整
+
 // Props
 const taskId = computed(() => route.params.taskId as string)
 
@@ -129,6 +163,21 @@ const isFailed = computed(() => analysisStore.isFailed)
 const fileId = computed(() => {
   // 从任务中获取文件ID，这里需要根据实际API响应调整
   return currentTask.value?.file_id || ''
+})
+
+// PDF 查看器样式
+const pdfViewerStyle = computed(() => {
+  if (isPdfFixed.value) {
+    // 固定时使用更大的高度，减少标题栏占用的空间
+    return {
+      height: `calc(100vh - 40px)`, // 减少顶部空间占用
+      overflow: 'auto'
+    }
+  }
+  return {
+    height: 'calc(100% - 60px)',
+    overflow: 'auto'
+  }
 })
 
 // 方法
@@ -215,6 +264,69 @@ const formatTime = (timeStr?: string): string => {
   }
 }
 
+// 布局切换
+const toggleLayout = () => {
+  isLayoutSwapped.value = !isLayoutSwapped.value
+  // 切换布局时重置PDF固定状态
+  isPdfFixed.value = false
+
+  // 立即移除固定布局的CSS类
+  if (dualPaneContainer.value) {
+    dualPaneContainer.value.classList.remove('has-fixed-pdf')
+  }
+
+  // 确保DOM更新后重新检查滚动状态
+  nextTick(() => {
+    handleScroll()
+  })
+}
+
+// 滚动处理
+const handleScroll = () => {
+  if (!dualPaneContainer.value) return
+
+  const rect = dualPaneContainer.value.getBoundingClientRect()
+  // 添加一个小的缓冲区，避免频繁切换
+  const shouldFixPdf = rect.top <= -5
+
+  if (shouldFixPdf !== isPdfFixed.value) {
+    isPdfFixed.value = shouldFixPdf
+
+    // 更新容器的CSS类来管理布局状态
+    nextTick(() => {
+      if (dualPaneContainer.value) {
+        if (shouldFixPdf) {
+          dualPaneContainer.value.classList.add('has-fixed-pdf')
+        } else {
+          dualPaneContainer.value.classList.remove('has-fixed-pdf')
+        }
+      }
+    })
+  }
+}
+
+// 节流函数
+const throttle = (func: Function, delay: number) => {
+  let timeoutId: number | null = null
+  let lastExecTime = 0
+  return function (...args: any[]) {
+    const currentTime = Date.now()
+
+    if (currentTime - lastExecTime > delay) {
+      func(...args)
+      lastExecTime = currentTime
+    } else {
+      if (timeoutId) clearTimeout(timeoutId)
+      timeoutId = window.setTimeout(() => {
+        func(...args)
+        lastExecTime = Date.now()
+      }, delay - (currentTime - lastExecTime))
+    }
+  }
+}
+
+const throttledHandleScroll = throttle(handleScroll, 32) // 降低频率，减少性能影响
+
 // 生命周期
 onMounted(async () => {
   console.log('Analysis page mounted with taskId:', taskId.value)
@@ -243,10 +355,17 @@ onMounted(async () => {
   } finally {
     isLoading.value = false
   }
+
+  // 添加滚动监听
+  nextTick(() => {
+    window.addEventListener('scroll', throttledHandleScroll)
+    handleScroll() // 初始检查
+  })
 })
 
 onUnmounted(() => {
   stopPolling()
+  window.removeEventListener('scroll', throttledHandleScroll)
 })
 </script>
 
@@ -335,12 +454,92 @@ onUnmounted(() => {
   min-height: calc(100vh - 160px);
   gap: 1px;
   background: rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
 .left-pane,
 .right-pane {
   flex: 1;
   background: white;
+  position: relative;
+}
+
+/* PDF固定状态 */
+.pdf-fixed {
+  position: fixed !important;
+  top: 0;
+  width: 50% !important;
+  height: 100vh !important;
+  z-index: 100;
+  background: white;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 当PDF固定时，调整双栏布局容器 */
+.dual-pane-layout.has-fixed-pdf {
+  position: relative;
+}
+
+/* 默认布局（左侧原文，右侧分析）：左侧PDF固定时 */
+.dual-pane-layout:not(.layout-swapped) .left-pane.pdf-fixed {
+  left: 0 !important;
+}
+
+.dual-pane-layout:not(.layout-swapped).has-fixed-pdf .right-pane {
+  margin-left: 50% !important;
+  width: 50% !important;
+  flex: none !important;
+}
+
+/* 切换布局（左侧分析，右侧原文）：右侧PDF固定时 */
+.layout-swapped .right-pane.pdf-fixed {
+  right: 0 !important;
+}
+
+.layout-swapped.has-fixed-pdf .left-pane {
+  margin-right: 50% !important;
+  width: 50% !important;
+  flex: none !important;
+}
+
+/* 确保内容不会溢出 */
+.dual-pane-layout .left-pane,
+.dual-pane-layout .right-pane {
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.dual-pane-layout .analysis-content,
+.dual-pane-layout .pdf-viewer {
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* 确保卡片内容不超出边界 */
+.dual-pane-layout .el-card {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.dual-pane-layout .el-card :deep(.el-card__body) {
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* 确保分析结果内的所有内容都有正确的边界 */
+.analysis-content :deep(*) {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.analysis-content :deep(.el-tabs__content) {
+  overflow: hidden;
+}
+
+.analysis-content :deep(.el-tab-pane) {
+  overflow-x: hidden;
+  word-wrap: break-word;
 }
 
 .pdf-viewer-card,
@@ -359,10 +558,45 @@ onUnmounted(() => {
   color: #2c3e50;
 }
 
-.pdf-viewer,
+.pdf-viewer {
+  height: calc(100% - 60px);
+  overflow: auto;
+}
+
 .analysis-content {
   height: calc(100% - 60px);
   overflow: auto;
+  padding: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+/* PDF固定时的特殊样式 */
+.pdf-fixed .pdf-viewer {
+  height: calc(100vh - 40px) !important;
+}
+
+.pdf-fixed .pdf-viewer-card {
+  height: 100vh !important;
+  border: none;
+  border-radius: 0;
+}
+
+/* PDF固定时优化卡片头部 */
+.pdf-fixed .pdf-viewer-card :deep(.el-card__header) {
+  padding: 8px 16px;
+  background: #f5f7fa;
+  border-bottom: 1px solid #e4e7ed;
+  font-size: 14px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.pdf-fixed .pdf-viewer-card :deep(.el-card__body) {
+  padding: 0;
+  height: calc(100vh - 40px);
 }
 
 /* 错误容器 */
@@ -380,18 +614,32 @@ onUnmounted(() => {
     flex-direction: column;
     height: auto;
   }
-  
+
   .left-pane,
   .right-pane {
     height: 50vh;
   }
-  
+
+  /* 移动端禁用PDF固定功能 */
+  .pdf-fixed {
+    position: relative !important;
+    width: 100% !important;
+    height: 50vh !important;
+  }
+
+  .dual-pane-layout:not(.layout-swapped).has-fixed-pdf .right-pane,
+  .layout-swapped.has-fixed-pdf .left-pane {
+    margin: 0 !important;
+    width: 100% !important;
+    flex: 1 !important;
+  }
+
   .result-header {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
   }
-  
+
   .header-actions {
     width: 100%;
     justify-content: center;

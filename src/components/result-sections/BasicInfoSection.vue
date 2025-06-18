@@ -83,6 +83,31 @@
         </el-collapse-item>
       </el-collapse>
     </el-card>
+
+    <!-- 投标文件要求 -->
+    <el-card class="info-card" shadow="never">
+      <template #header>
+        <div class="card-header">
+          <el-icon><Files /></el-icon>
+          <span>投标文件要求</span>
+        </div>
+      </template>
+
+      <el-collapse v-model="bidDocActiveCollapse">
+        <el-collapse-item title="组成与编制规范" name="composition">
+          <FieldList :fields="basicInfo.bid_document_requirements.composition_and_format" />
+        </el-collapse-item>
+        <el-collapse-item title="装订与密封要求" name="binding">
+          <FieldList :fields="basicInfo.bid_document_requirements.binding_and_sealing" />
+        </el-collapse-item>
+        <el-collapse-item title="签字盖章要求" name="signature">
+          <FieldList :fields="basicInfo.bid_document_requirements.signature_and_seal" />
+        </el-collapse-item>
+        <el-collapse-item title="投标文件章节框架（目录）" name="structure">
+          <DocumentStructureDisplay :fields="basicInfo.bid_document_requirements.document_structure" />
+        </el-collapse-item>
+      </el-collapse>
+    </el-card>
   </div>
 </template>
 
@@ -91,6 +116,7 @@ import { ref } from 'vue'
 import type { BasicInformation } from '../../types'
 import FieldDisplay from '../common/FieldDisplay.vue'
 import FieldList from '../common/FieldList.vue'
+import DocumentStructureDisplay from '../common/DocumentStructureDisplay.vue'
 
 // Props
 interface Props {
@@ -101,6 +127,7 @@ defineProps<Props>()
 
 // 响应式数据
 const activeCollapse = ref(['certifications', 'experience', 'team', 'other'])
+const bidDocActiveCollapse = ref(['composition', 'binding', 'signature', 'structure'])
 </script>
 
 <style scoped>

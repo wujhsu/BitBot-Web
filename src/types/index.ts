@@ -50,6 +50,13 @@ export interface QualificationCriteria {
   other_requirements: ExtractedField[]
 }
 
+export interface BidDocumentRequirements {
+  composition_and_format: ExtractedField[]
+  binding_and_sealing: ExtractedField[]
+  signature_and_seal: ExtractedField[]
+  document_structure: ExtractedField[]
+}
+
 export interface BasicInformation {
   project_name: ExtractedField
   tender_number: ExtractedField
@@ -63,6 +70,7 @@ export interface BasicInformation {
   agent_name: ExtractedField
   agent_contact: ExtractedField
   qualification_criteria: QualificationCriteria
+  bid_document_requirements: BidDocumentRequirements
 }
 
 export interface ScoreComposition {
@@ -89,7 +97,7 @@ export interface ScoringCriteria {
   disqualification_clauses: ExtractedField[]
 }
 
-export interface OtherInformation {
+export interface ContractInformation {
   breach_liability: ExtractedField[]
   contract_terms: ExtractedField[]
   payment_terms: ExtractedField
@@ -105,7 +113,7 @@ export interface AnalysisResult {
   analysis_time: string
   basic_information: BasicInformation
   scoring_criteria: ScoringCriteria
-  other_information: OtherInformation
+  contract_information: ContractInformation
   processing_notes: string[]
 }
 
