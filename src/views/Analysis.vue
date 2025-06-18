@@ -342,16 +342,41 @@ onMounted(async () => {
     // 首次加载任务状态
     await fetchTaskStatus()
 
-    // 如果任务还在进行中，开始轮询
-    if (currentTask.value &&
-        currentTask.value.status !== 'completed' &&
-        currentTask.value.status !== 'failed') {
-      startPolling()
+    // 检查任务状态并决定是否需要轮询
+    if (currentTask.value) {
+      const status = currentTask.value.status
+      console.log('Current task status:', status)
+
+      if (status === 'completed') {
+        // 任务已完成，确保分析结果已设置
+        if (currentTask.value.result) {
+          analysisStore.analysisResult = currentTask.value.result
+          console.log('Analysis result loaded from completed task')
+        }
+        // 不需要轮询，直接显示结果
+      } else if (status === 'failed') {
+        // 任务失败，显示错误信息
+        if (currentTask.value.error_message) {
+          analysisStore.setAnalysisError(currentTask.value.error_message)
+        }
+        // 不需要轮询
+      } else {
+        // 任务还在进行中，开始轮询
+        console.log('Task is in progress, starting polling...')
+        startPolling()
+      }
     }
 
   } catch (error: any) {
     console.error('Initial load error:', error)
     ElMessage.error(error.error_message || '加载分析任务失败')
+    // 如果加载失败，可能是网络问题，尝试重新获取
+    setTimeout(() => {
+      if (!currentTask.value) {
+        console.log('Retrying to fetch task status...')
+        fetchTaskStatus().catch(console.error)
+      }
+    }, 3000)
   } finally {
     isLoading.value = false
   }

@@ -1,13 +1,16 @@
 <template>
   <div class="file-upload-container">
-    <el-card class="upload-card" shadow="hover">
-      <template #header>
-        <div class="card-header">
+    <div class="upload-card">
+      <div class="upload-header">
+        <div class="header-icon">
           <el-icon><Upload /></el-icon>
-          <span>上传招标文件</span>
         </div>
-      </template>
-      
+        <div class="header-text">
+          <h2 class="upload-title">上传招标文件</h2>
+          <p class="upload-subtitle">开始您的智能分析之旅</p>
+        </div>
+      </div>
+
       <div class="upload-content">
         <el-upload
           ref="uploadRef"
@@ -21,15 +24,18 @@
           :disabled="isUploading"
         >
           <div class="upload-area">
-            <el-icon class="upload-icon" :class="{ 'uploading': isUploading }">
-              <component :is="uploadIcon" />
-            </el-icon>
+            <div class="upload-icon-wrapper">
+              <el-icon class="upload-icon" :class="{ 'uploading': isUploading }">
+                <component :is="uploadIcon" />
+              </el-icon>
+            </div>
             <div class="upload-text">
-              <p class="upload-hint">
-                {{ isUploading ? '正在上传...' : '将文件拖拽到此处，或点击选择文件' }}
-              </p>
+              <h3 class="upload-hint">
+                {{ isUploading ? '正在上传文件...' : '拖拽文件到此处，或点击选择文件' }}
+              </h3>
               <p class="upload-desc">
-                支持 PDF、Word 文档（.pdf, .doc, .docx），文件大小不超过 50MB
+                支持 PDF、Word 文档（.pdf, .doc, .docx）<br>
+                文件大小不超过 50MB
               </p>
             </div>
           </div>
@@ -48,27 +54,46 @@
         
         <!-- 文件信息 -->
         <div v-if="currentFile && !isUploading" class="file-info">
-          <el-alert
-            :title="`文件上传成功：${currentFile.filename}`"
-            type="success"
-            :closable="false"
-            show-icon
-          >
-            <template #default>
+          <div class="success-card">
+            <div class="success-icon">
+              <el-icon><SuccessFilled /></el-icon>
+            </div>
+            <div class="success-content">
+              <h3 class="success-title">文件上传成功！</h3>
+              <p class="file-name">{{ currentFile.filename }}</p>
               <div class="file-details">
-                <p><strong>文件大小：</strong>{{ formatFileSize(currentFile.file_size) }}</p>
-                <p><strong>文件类型：</strong>{{ currentFile.file_type.toUpperCase() }}</p>
-                <p v-if="currentFile.is_converted"><strong>状态：</strong>已转换为 PDF</p>
+                <div class="detail-item">
+                  <span class="detail-label">文件大小：</span>
+                  <span class="detail-value">{{ formatFileSize(currentFile.file_size) }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">文件类型：</span>
+                  <span class="detail-value">{{ currentFile.file_type.toUpperCase() }}</span>
+                </div>
+                <div v-if="currentFile.is_converted" class="detail-item">
+                  <span class="detail-label">状态：</span>
+                  <span class="detail-value status-converted">已转换为 PDF</span>
+                </div>
               </div>
-            </template>
-          </el-alert>
-          
+            </div>
+          </div>
+
           <div class="file-actions">
-            <el-button type="primary" @click="startAnalysis" :loading="isStartingAnalysis">
+            <el-button
+              type="primary"
+              size="large"
+              @click="startAnalysis"
+              :loading="isStartingAnalysis"
+              class="action-button primary-action"
+            >
               <el-icon><DataAnalysis /></el-icon>
-              开始分析
+              开始智能分析
             </el-button>
-            <el-button @click="resetUpload">
+            <el-button
+              size="large"
+              @click="resetUpload"
+              class="action-button secondary-action"
+            >
               <el-icon><RefreshLeft /></el-icon>
               重新上传
             </el-button>
@@ -86,7 +111,7 @@
           />
         </div>
       </div>
-    </el-card>
+    </div>
   </div>
 </template>
 
@@ -243,26 +268,64 @@ const formatFileSize = (bytes: number): string => {
 
 <style scoped>
 .file-upload-container {
-  max-width: 600px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
 .upload-card {
-  border-radius: 12px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   overflow: hidden;
+  border: 2px solid #e9ecef;
+  position: relative;
+  transition: all 0.3s ease;
 }
 
-.card-header {
+.upload-card:hover {
+  border-color: #4a5568;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.upload-header {
+  padding: 50px 40px 30px;
+  text-align: center;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.header-icon {
+  width: 80px;
+  height: 80px;
+  background: #4a5568;
+  border-radius: 20px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 18px;
+  justify-content: center;
+  margin: 0 auto 24px;
+  box-shadow: 0 8px 24px rgba(74, 85, 104, 0.2);
+}
+
+.header-icon .el-icon {
+  font-size: 36px;
+  color: white;
+}
+
+.upload-title {
+  font-size: 32px;
   font-weight: 600;
-  color: #2c3e50;
+  color: #2d3748;
+  margin: 0 0 12px 0;
+}
+
+.upload-subtitle {
+  font-size: 18px;
+  color: #718096;
+  margin: 0;
 }
 
 .upload-content {
-  padding: 20px 0;
+  padding: 40px 50px 50px;
 }
 
 .upload-dragger {
@@ -270,19 +333,32 @@ const formatFileSize = (bytes: number): string => {
 }
 
 .upload-area {
-  padding: 40px 20px;
+  padding: 80px 40px;
   text-align: center;
+  border: 3px dashed #cbd5e0;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  background: #f7fafc;
+}
+
+.upload-area:hover {
+  border-color: #4a5568;
+  background: #edf2f7;
+}
+
+.upload-icon-wrapper {
+  margin-bottom: 32px;
 }
 
 .upload-icon {
-  font-size: 48px;
-  color: #409eff;
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
+  font-size: 80px;
+  color: #4a5568;
+  transition: all 0.4s ease;
 }
 
 .upload-icon.uploading {
   animation: rotate 1s linear infinite;
+  color: #38a169;
 }
 
 @keyframes rotate {
@@ -291,53 +367,204 @@ const formatFileSize = (bytes: number): string => {
 }
 
 .upload-text {
-  color: #606266;
+  color: #4a5568;
 }
 
 .upload-hint {
-  font-size: 16px;
-  margin-bottom: 8px;
-  color: #303133;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: #2d3748;
 }
 
 .upload-desc {
-  font-size: 14px;
-  color: #909399;
+  font-size: 16px;
+  color: #718096;
+  line-height: 1.6;
+  margin: 0;
 }
 
 .upload-progress {
-  margin-top: 20px;
+  margin-top: 30px;
   padding: 0 20px;
 }
 
 .progress-text {
   text-align: center;
-  margin-top: 8px;
+  margin-top: 12px;
   color: #67c23a;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 16px;
 }
 
+/* 文件信息样式 */
 .file-info {
-  margin-top: 20px;
+  margin-top: 30px;
+}
+
+.success-card {
+  background: linear-gradient(135deg, rgba(103, 194, 58, 0.1) 0%, rgba(64, 158, 255, 0.1) 100%);
+  border: 2px solid rgba(103, 194, 58, 0.2);
+  border-radius: 16px;
+  padding: 30px;
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.success-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #67c23a 0%, #409eff 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.success-icon .el-icon {
+  font-size: 24px;
+  color: white;
+}
+
+.success-content {
+  flex: 1;
+}
+
+.success-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+}
+
+.file-name {
+  font-size: 16px;
+  color: #667eea;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  word-break: break-all;
 }
 
 .file-details {
-  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.file-details p {
-  margin: 4px 0;
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-label {
   font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 600;
+}
+
+.status-converted {
+  color: #67c23a;
+  background: rgba(103, 194, 58, 0.1);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 12px;
 }
 
 .file-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 16px;
   justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  min-width: 160px;
+  height: 48px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.primary-action {
+  background: #4a5568;
+  border: none;
+  box-shadow: 0 8px 25px rgba(74, 85, 104, 0.3);
+}
+
+.primary-action:hover {
+  background: #2d3748;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(74, 85, 104, 0.4);
+}
+
+.secondary-action {
+  background: white;
+  border: 2px solid #e2e8f0;
+  color: #718096;
+}
+
+.secondary-action:hover {
+  border-color: #4a5568;
+  color: #4a5568;
+  transform: translateY(-2px);
 }
 
 .error-info {
-  margin-top: 20px;
+  margin-top: 30px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .upload-header {
+    padding: 30px 20px 15px;
+  }
+
+  .upload-title {
+    font-size: 24px;
+  }
+
+  .upload-content {
+    padding: 15px 20px 30px;
+  }
+
+  .upload-area {
+    padding: 40px 20px;
+  }
+
+  .upload-icon {
+    font-size: 48px;
+  }
+
+  .upload-hint {
+    font-size: 18px;
+  }
+
+  .success-card {
+    padding: 20px;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .file-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .action-button {
+    width: 100%;
+    max-width: 280px;
+  }
 }
 </style>

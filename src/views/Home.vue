@@ -1,26 +1,24 @@
 <template>
   <div class="home-container">
-    <div class="home-content">
+    <!-- 主要内容区域 -->
+    <div class="main-content">
       <!-- 欢迎区域 -->
-      <div class="welcome-section">
-        <div class="welcome-content">
-          <h1 class="welcome-title">
-            <el-icon class="title-icon"><Document /></el-icon>
-            智能投标助手
-          </h1>
-          <p class="welcome-subtitle">
-            基于AI的招投标文件分析系统，快速提取关键信息，助力投标决策
-          </p>
-          
-          <!-- 功能特点 -->
-          <div class="features">
+      <div class="hero-section">
+        <div class="hero-content">
+          <div class="hero-header">
+            <h1 class="app-title">智能投标助手</h1>
+            <p class="app-description">基于AI技术的招投标文件智能分析系统</p>
+          </div>
+
+          <!-- 核心功能展示 -->
+          <div class="features-grid">
             <div class="feature-item">
               <el-icon><Upload /></el-icon>
-              <span>支持多种格式</span>
+              <span>多格式支持</span>
             </div>
             <div class="feature-item">
               <el-icon><DataAnalysis /></el-icon>
-              <span>智能信息提取</span>
+              <span>智能分析</span>
             </div>
             <div class="feature-item">
               <el-icon><Document /></el-icon>
@@ -28,70 +26,30 @@
             </div>
             <div class="feature-item">
               <el-icon><View /></el-icon>
-              <span>PDF预览对比</span>
+              <span>双栏对比</span>
             </div>
           </div>
         </div>
       </div>
-      
+
       <!-- 上传区域 -->
       <div class="upload-section">
-        <FileUpload />
+        <div class="upload-wrapper">
+          <FileUpload />
+        </div>
       </div>
+    </div>
+
+    <!-- 底部信息区域 -->
+    <div class="info-section">
+      <div class="info-content">
       
-      <!-- 使用说明 -->
-      <div class="instructions-section">
-        <el-card class="instructions-card" shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <el-icon><InfoFilled /></el-icon>
-              <span>使用说明</span>
-            </div>
-          </template>
-          
-          <div class="instructions-content">
-            <el-steps :active="4" align-center>
-              <el-step title="上传文件" description="支持PDF、DOC、DOCX格式">
-                <template #icon>
-                  <el-icon><Upload /></el-icon>
-                </template>
-              </el-step>
-              <el-step title="自动转换" description="非PDF文件自动转换为PDF">
-                <template #icon>
-                  <el-icon><RefreshRight /></el-icon>
-                </template>
-              </el-step>
-              <el-step title="智能分析" description="AI提取招标文件关键信息">
-                <template #icon>
-                  <el-icon><DataAnalysis /></el-icon>
-                </template>
-              </el-step>
-              <el-step title="查看结果" description="双栏对比查看原文和分析结果">
-                <template #icon>
-                  <el-icon><View /></el-icon>
-                </template>
-              </el-step>
-            </el-steps>
-            
-            <div class="tips">
-              <el-alert
-                title="温馨提示"
-                type="info"
-                :closable="false"
-                show-icon
-              >
-                <template #default>
-                  <ul class="tips-list">
-                    <li>支持的文件格式：PDF、DOC、DOCX</li>
-                    <li>文件大小限制：最大50MB</li>
-                    <li>分析时间：根据文件大小，通常需要1-3分钟</li>
-                    <li>建议使用文字清晰的PDF文件以获得最佳分析效果</li>
-                  </ul>
-                </template>
-              </el-alert>
-            </div>
-          </div>
-        </el-card>
+        <!-- 使用说明 -->
+        <div class="usage-section">
+          <p class="usage-text">
+            上传招标文件，AI自动分析并生成结构化报告
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -104,182 +62,217 @@ import FileUpload from '../components/FileUpload.vue'
 <style scoped>
 .home-container {
   min-height: calc(100vh - 60px);
-  padding: 40px 20px;
   background: transparent;
+  overflow-x: hidden;
 }
 
-.home-content {
-  max-width: 1200px;
+.main-content {
+  max-width: 1000px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
+  padding: 0 20px;
 }
 
-/* 欢迎区域 */
-.welcome-section {
+/* Hero区域 */
+.hero-section {
+  padding: 60px 0 40px;
   text-align: center;
-  padding: 60px 20px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background: white;
+  border-radius: 16px;
+  margin: 40px 0 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f0f0;
 }
 
-.welcome-content {
-  max-width: 800px;
-  margin: 0 auto;
+.hero-content {
+  padding: 0 40px;
 }
 
-.welcome-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  font-size: 48px;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.title-icon {
-  font-size: 48px;
-  color: #667eea;
-}
-
-.welcome-subtitle {
-  font-size: 20px;
-  color: #606266;
+.hero-header {
   margin-bottom: 40px;
-  line-height: 1.6;
 }
 
-.features {
+.app-title {
+  font-size: 36px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
+
+.app-description {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* 功能特点网格 */
+.features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  margin-top: 40px;
+  margin-bottom: 20px;
 }
 
 .feature-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  padding: 16px;
-  background: rgba(102, 126, 234, 0.1);
+  padding: 20px 15px;
+  background: #f8f9fa;
   border-radius: 12px;
-  color: #667eea;
-  font-weight: 500;
   transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
 }
 
 .feature-item:hover {
-  background: rgba(102, 126, 234, 0.2);
+  background: #f1f3f4;
   transform: translateY(-2px);
+}
+
+.feature-item .el-icon {
+  font-size: 24px;
+  color: #4a5568;
+}
+
+.feature-item span {
+  font-size: 14px;
+  color: #4a5568;
+  font-weight: 500;
+  text-align: center;
 }
 
 /* 上传区域 */
 .upload-section {
-  display: flex;
-  justify-content: center;
+  margin: 40px 0;
+}
+
+.upload-wrapper {
+  margin: 0 auto;
+}
+
+/* 信息区域 */
+.info-section {
+  background: white;
+  border-radius: 16px;
+  margin: 30px 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f0f0;
+}
+
+.info-content {
+  padding: 30px 40px;
 }
 
 /* 使用说明 */
-.instructions-section {
-  margin-top: 20px;
+.usage-section {
+  text-align: center;
 }
 
-.instructions-card {
-  border-radius: 16px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #2c3e50;
-}
-
-.instructions-content {
-  padding: 20px 0;
-}
-
-.tips {
-  margin-top: 30px;
-}
-
-.tips-list {
+.usage-text {
+  font-size: 16px;
+  color: #6b7280;
   margin: 0;
-  padding-left: 20px;
-}
-
-.tips-list li {
-  margin: 8px 0;
-  color: #606266;
+  line-height: 1.5;
 }
 
 /* 响应式设计 */
+@media (max-width: 1200px) {
+  .main-content {
+    padding: 0 15px;
+  }
+
+  .hero-content {
+    padding: 0 30px;
+  }
+
+  .info-content {
+    padding: 25px 30px;
+  }
+}
+
 @media (max-width: 768px) {
-  .home-container {
-    padding: 20px 10px;
+  .main-content {
+    padding: 0 10px;
   }
-  
-  .welcome-title {
-    font-size: 36px;
-    flex-direction: column;
-    gap: 12px;
+
+  .hero-section {
+    padding: 40px 0 30px;
+    margin: 30px 0 20px;
   }
-  
-  .welcome-subtitle {
-    font-size: 18px;
+
+  .hero-content {
+    padding: 0 20px;
   }
-  
-  .features {
+
+  .app-title {
+    font-size: 28px;
+  }
+
+  .app-description {
+    font-size: 15px;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+
+  .feature-item {
+    padding: 15px 10px;
+  }
+
+  .feature-item .el-icon {
+    font-size: 20px;
+  }
+
+  .feature-item span {
+    font-size: 13px;
+  }
+
+  .upload-section {
+    margin: 30px 0;
+  }
+
+  .info-section {
+    margin: 20px 0;
+  }
+
+  .info-content {
+    padding: 20px;
+  }
+
+  .usage-text {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    padding: 30px 0 25px;
+  }
+
+  .app-title {
+    font-size: 24px;
+  }
+
+  .features-grid {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
-  .home-content {
-    gap: 30px;
+
+  .feature-item {
+    padding: 12px 8px;
   }
-}
 
-/* 步骤样式自定义 */
-:deep(.el-steps--horizontal .el-step__line) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
+  .info-content {
+    padding: 15px;
+  }
 
-:deep(.el-step__icon.is-text) {
-  border-color: #667eea;
-  color: #667eea;
-}
-
-:deep(.el-step__icon.is-process) {
-  background: #667eea;
-  border-color: #667eea;
-}
-
-:deep(.el-step__icon.is-finish) {
-  background: #67c23a;
-  border-color: #67c23a;
-}
-
-:deep(.el-step__title.is-process) {
-  color: #667eea;
-  font-weight: 600;
-}
-
-:deep(.el-step__title.is-finish) {
-  color: #67c23a;
+  .usage-text {
+    font-size: 14px;
+  }
 }
 </style>
