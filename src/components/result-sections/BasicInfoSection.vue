@@ -59,12 +59,12 @@
       </el-descriptions>
     </el-card>
     
-    <!-- 资格审查条件 -->
+    <!-- 投标人资格要求 -->
     <el-card class="info-card" shadow="never">
       <template #header>
         <div class="card-header">
           <el-icon><UserFilled /></el-icon>
-          <span>资格审查条件</span>
+          <span>投标人资格要求</span>
         </div>
       </template>
       
@@ -108,6 +108,28 @@
         </el-collapse-item>
       </el-collapse>
     </el-card>
+
+    <!-- 开评定标流程 -->
+    <el-card class="info-card" shadow="never">
+      <template #header>
+        <div class="card-header">
+          <el-icon><Operation /></el-icon>
+          <span>开评定标流程</span>
+        </div>
+      </template>
+
+      <el-collapse v-model="evaluationActiveCollapse">
+        <el-collapse-item title="开标环节（时间、地点、程序）" name="opening">
+          <FieldList :fields="basicInfo.bid_evaluation_process.bid_opening" />
+        </el-collapse-item>
+        <el-collapse-item title="评标环节（评委会、评审方法/标准、主要流程）" name="evaluation">
+          <FieldList :fields="basicInfo.bid_evaluation_process.evaluation" />
+        </el-collapse-item>
+        <el-collapse-item title="定标环节（定标原则、中标通知）" name="award">
+          <FieldList :fields="basicInfo.bid_evaluation_process.award_decision" />
+        </el-collapse-item>
+      </el-collapse>
+    </el-card>
   </div>
 </template>
 
@@ -128,6 +150,7 @@ defineProps<Props>()
 // 响应式数据
 const activeCollapse = ref(['certifications', 'experience', 'team', 'other'])
 const bidDocActiveCollapse = ref(['composition', 'binding', 'signature', 'structure'])
+const evaluationActiveCollapse = ref(['opening', 'evaluation', 'award'])
 </script>
 
 <style scoped>

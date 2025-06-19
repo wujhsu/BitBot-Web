@@ -62,6 +62,12 @@ export interface BidDocumentRequirements {
   document_structure: ExtractedField[]
 }
 
+export interface BidEvaluationProcess {
+  bid_opening: ExtractedField[]
+  evaluation: ExtractedField[]
+  award_decision: ExtractedField[]
+}
+
 export interface BasicInformation {
   project_name: ExtractedField
   tender_number: ExtractedField
@@ -76,6 +82,7 @@ export interface BasicInformation {
   agent_contact: ExtractedField
   qualification_criteria: QualificationCriteria
   bid_document_requirements: BidDocumentRequirements
+  bid_evaluation_process: BidEvaluationProcess
 }
 
 export interface ScoreComposition {

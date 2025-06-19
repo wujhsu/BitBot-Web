@@ -1,14 +1,26 @@
 <template>
   <div class="scoring-section">
-    <!-- 评分方法 -->
+    <!-- 初步评审标准 -->
+    <el-card class="info-card" shadow="never">
+      <template #header>
+        <div class="card-header">
+          <el-icon><CheckCircle /></el-icon>
+          <span>初步评审标准</span>
+        </div>
+      </template>
+
+      <FieldList :fields="scoringCriteria.preliminary_review" />
+    </el-card>
+
+    <!-- 详细评审方法 -->
     <el-card class="info-card" shadow="never">
       <template #header>
         <div class="card-header">
           <el-icon><DataAnalysis /></el-icon>
-          <span>评审方法</span>
+          <span>详细评审方法</span>
         </div>
       </template>
-      
+
       <FieldDisplay :field="scoringCriteria.evaluation_method" />
     </el-card>
     
@@ -60,7 +72,19 @@
         <el-table-column prop="criteria" label="评分标准" />
       </el-table>
     </el-card>
-    
+
+    <!-- 加分项明细 -->
+    <el-card class="info-card" shadow="never">
+      <template #header>
+        <div class="card-header">
+          <el-icon><Plus /></el-icon>
+          <span>加分项明细</span>
+        </div>
+      </template>
+
+      <FieldList :fields="scoringCriteria.bonus_points" />
+    </el-card>
+
     <!-- 否决项条款 -->
     <el-card class="info-card" shadow="never">
       <template #header>
@@ -69,7 +93,7 @@
           <span>否决项条款</span>
         </div>
       </template>
-      
+
       <FieldList :fields="scoringCriteria.disqualification_clauses" />
     </el-card>
   </div>

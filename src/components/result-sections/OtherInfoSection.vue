@@ -13,7 +13,7 @@
         <el-descriptions-item label="付款方式与周期">
           <FieldDisplay :field="otherInfo.payment_terms" />
         </el-descriptions-item>
-        <el-descriptions-item label="交付要求">
+        <el-descriptions-item label="项目完成期限/交付要求">
           <FieldDisplay :field="otherInfo.delivery_requirements" />
         </el-descriptions-item>
         <el-descriptions-item label="投标有效期">
