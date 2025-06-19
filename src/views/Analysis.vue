@@ -28,7 +28,7 @@
       <div class="result-header">
         <div class="header-left">
           <h2 class="result-title">
-            <el-icon><Document /></el-icon>
+            <el-icon><Folder /></el-icon>
             {{ analysisResult?.document_name || '分析结果' }}
           </h2>
           <p class="result-time">
@@ -185,12 +185,31 @@ const fetchTaskStatus = async () => {
   try {
     const task = await getAnalysisStatus(taskId.value)
     const oldStep = currentTask.value?.progress?.current_step
+    const oldAgentProgress = currentTask.value?.progress?.agent_progress
 
     analysisStore.updateTaskStatus(task)
 
-    // 如果步骤发生了变化，在控制台记录（用于调试）
+    // 检测并行进度变化
+    if (task.progress?.agent_progress && oldAgentProgress) {
+      for (const [agent, progress] of Object.entries(task.progress.agent_progress)) {
+        if (oldAgentProgress[agent] !== progress) {
+          const agentName = getAgentDisplayName(agent)
+          console.log(`智能体 ${agentName} 进度更新: ${oldAgentProgress[agent] || 0}% → ${progress}%`)
+        }
+      }
+    } else if (task.progress?.agent_progress && !oldAgentProgress) {
+      // 首次获取到并行进度数据
+      console.log('开始并行处理，智能体进度:', task.progress.agent_progress)
+    }
+
+    // 原有的步骤变化检测
     if (oldStep && oldStep !== task.progress?.current_step) {
       console.log(`分析进度更新: ${oldStep} → ${task.progress?.current_step}`)
+    }
+
+    // 检测部分智能体失败的场景
+    if (task.progress?.current_step === 'partial_extraction_completed') {
+      console.warn('部分智能体提取完成，可能存在失败的智能体')
     }
 
     // 如果任务完成或失败，停止轮询
@@ -262,6 +281,16 @@ const formatTime = (timeStr?: string): string => {
   } catch {
     return timeStr
   }
+}
+
+// 获取智能体显示名称
+const getAgentDisplayName = (agentKey: string): string => {
+  const agentNames: Record<string, string> = {
+    'basic_info_extractor': '基础信息提取',
+    'scoring_analyzer': '评分标准分析',
+    'contract_info_extractor': '合同信息提取'
+  }
+  return agentNames[agentKey] || agentKey
 }
 
 // 布局切换
@@ -363,6 +392,12 @@ onMounted(async () => {
       } else {
         // 任务还在进行中，开始轮询
         console.log('Task is in progress, starting polling...')
+
+        // 如果当前有并行进度数据，记录初始状态
+        if (currentTask.value.progress?.agent_progress) {
+          console.log('当前并行进度状态:', currentTask.value.progress.agent_progress)
+        }
+
         startPolling()
       }
     }

@@ -15,6 +15,11 @@ export interface AnalysisProgress {
   progress_percentage: number
   step_description: string
   estimated_remaining_time?: number
+  agent_progress?: {
+    basic_info_extractor: number
+    scoring_analyzer: number
+    contract_info_extractor: number
+  }
 }
 
 export interface AnalysisTask {
