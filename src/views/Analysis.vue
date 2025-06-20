@@ -269,8 +269,30 @@ const goHome = () => {
 }
 
 const downloadReport = () => {
-  // TODO: 实现报告下载功能
-  ElMessage.info('报告下载功能开发中...')
+  try {
+    // 检查任务状态
+    if (!currentTask.value) {
+      ElMessage.error('任务信息不存在')
+      return
+    }
+
+    if (currentTask.value.status !== 'completed') {
+      ElMessage.warning('任务尚未完成，无法下载报告')
+      return
+    }
+
+    // 构建下载URL
+    const downloadUrl = `http://localhost:8000/api/download-report/${taskId.value}?format=md`
+
+    // 使用window.open触发下载
+    window.open(downloadUrl, '_blank')
+
+    ElMessage.success('开始下载分析报告')
+
+  } catch (error: any) {
+    console.error('Download report error:', error)
+    ElMessage.error('下载报告失败')
+  }
 }
 
 const formatTime = (timeStr?: string): string => {
