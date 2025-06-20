@@ -121,6 +121,7 @@ import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useUploadStore } from '../stores/upload'
 import { useAnalysisStore } from '../stores/analysis'
+import { useSessionStore } from '../stores/session'
 import { uploadFile, startAnalysis as apiStartAnalysis } from '../api'
 import type { UploadFile } from '../types'
 
@@ -131,6 +132,7 @@ const router = useRouter()
 // 状态管理
 const uploadStore = useUploadStore()
 const analysisStore = useAnalysisStore()
+const sessionStore = useSessionStore()
 
 // 响应式数据
 const isStartingAnalysis = ref(false)

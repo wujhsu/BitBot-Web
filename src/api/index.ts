@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type { UploadFile, AnalysisTask, ApiResponse, ApiError } from '../types'
+import { useSessionStore } from '../stores/session'
 
 // 创建axios实例
 const api = axios.create({
@@ -13,6 +14,16 @@ const api = axios.create({
 // 请求拦截器
 api.interceptors.request.use(
   (config) => {
+    // 添加会话ID到请求头
+    try {
+      const sessionStore = useSessionStore()
+      if (sessionStore.sessionId) {
+        config.headers['X-Session-ID'] = sessionStore.sessionId
+      }
+    } catch (error) {
+      console.warn('Failed to add session ID to request:', error)
+    }
+
     console.log('API Request:', config.method?.toUpperCase(), config.url)
     return config
   },
