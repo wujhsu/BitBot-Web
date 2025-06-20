@@ -27,16 +27,7 @@
         </el-popover>
       </div>
       
-      <!-- 置信度 -->
-      <div v-if="field.confidence !== undefined && showConfidence" class="field-confidence">
-        <el-tag 
-          size="small" 
-          :type="getConfidenceType(field.confidence)"
-          effect="plain"
-        >
-          置信度: {{ Math.round(field.confidence * 100) }}%
-        </el-tag>
-      </div>
+
       
       <!-- 备注 -->
       <div v-if="field.notes" class="field-notes">
@@ -56,12 +47,10 @@ import type { ExtractedField, DocumentSource } from '../../types'
 interface Props {
   field: ExtractedField | undefined
   showSource?: boolean
-  showConfidence?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  showSource: true,
-  showConfidence: true
+  showSource: true
 })
 
 // 方法
@@ -87,11 +76,7 @@ const getSourceInfo = (source: DocumentSource): string => {
   return parts.length > 0 ? parts.join('\n') : '来源信息不详'
 }
 
-const getConfidenceType = (confidence: number): string => {
-  if (confidence >= 0.8) return 'success'
-  if (confidence >= 0.6) return 'warning'
-  return 'danger'
-}
+
 </script>
 
 <style scoped>
@@ -115,8 +100,7 @@ const getConfidenceType = (confidence: number): string => {
   line-height: 1.5;
 }
 
-.field-source,
-.field-confidence {
+.field-source {
   display: flex;
   align-items: center;
 }
