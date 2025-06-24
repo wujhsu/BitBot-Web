@@ -19,6 +19,7 @@ export interface AnalysisProgress {
     basic_info_extractor: number
     scoring_analyzer: number
     contract_info_extractor: number
+    [key: string]: number  // 添加索引签名以支持动态访问
   }
 }
 

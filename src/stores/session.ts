@@ -104,7 +104,7 @@ export const useSessionStore = defineStore('session', () => {
 
   // 验证会话ID格式
   const validateSessionId = (id: string): boolean => {
-    return id && id.startsWith('session_') && id.length > 10
+    return Boolean(id && id.startsWith('session_') && id.length > 10)
   }
 
   return {

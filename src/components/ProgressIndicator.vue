@@ -287,7 +287,9 @@ const formatTime = (seconds: number): string => {
 
 // 获取智能体进度
 const getAgentProgress = (agentKey: string): number => {
-  return props.task?.progress?.agent_progress?.[agentKey] || 0
+  const agentProgress = props.task?.progress?.agent_progress
+  if (!agentProgress) return 0
+  return (agentProgress as Record<string, number>)[agentKey] || 0
 }
 
 // 获取智能体状态
@@ -350,7 +352,7 @@ const partialSuccessMessage = computed(() => {
   const failedAgents: string[] = []
 
   agentList.forEach(agent => {
-    const progress = agentProgress[agent.key] || 0
+    const progress = (agentProgress as Record<string, number>)[agent.key] || 0
     if (progress >= 100) {
       successfulAgents.push(agent.name)
     } else {

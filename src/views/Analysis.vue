@@ -8,7 +8,7 @@
     <!-- 分析进行中 -->
     <div v-else-if="!isCompleted && !isFailed" class="progress-container">
       <div class="progress-wrapper">
-        <ProgressIndicator :task="currentTask" :error-message="analysisError" />
+        <ProgressIndicator :task="currentTask" :error-message="analysisError || undefined" />
         
         <div class="progress-actions">
           <el-button @click="goHome">
@@ -192,9 +192,10 @@ const fetchTaskStatus = async () => {
     // 检测并行进度变化
     if (task.progress?.agent_progress && oldAgentProgress) {
       for (const [agent, progress] of Object.entries(task.progress.agent_progress)) {
-        if (oldAgentProgress[agent] !== progress) {
+        const oldProgress = (oldAgentProgress as Record<string, number>)[agent]
+        if (oldProgress !== progress) {
           const agentName = getAgentDisplayName(agent)
-          console.log(`智能体 ${agentName} 进度更新: ${oldAgentProgress[agent] || 0}% → ${progress}%`)
+          console.log(`智能体 ${agentName} 进度更新: ${oldProgress || 0}% → ${progress}%`)
         }
       }
     } else if (task.progress?.agent_progress && !oldAgentProgress) {
