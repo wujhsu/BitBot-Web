@@ -129,6 +129,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAnalysisStore } from '../stores/analysis'
+import { useSessionStore } from '../stores/session'
 import { getAnalysisStatus } from '../api'
 import ProgressIndicator from '../components/ProgressIndicator.vue'
 import SimplePDFViewer from '../components/SimplePDFViewer.vue'
@@ -266,6 +267,15 @@ const stopPolling = () => {
 }
 
 const goHome = () => {
+  // 清除当前会话，确保返回首页时使用新的会话ID
+  try {
+    const sessionStore = useSessionStore()
+    sessionStore.clearSession()
+    console.log('返回首页：已清除会话，将使用新的会话ID')
+  } catch (error) {
+    console.warn('清除会话失败:', error)
+  }
+
   router.push('/')
 }
 

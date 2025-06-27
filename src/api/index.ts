@@ -31,6 +31,12 @@ api.interceptors.request.use(
       if (sessionStore.sessionId) {
         config.headers['X-Session-ID'] = sessionStore.sessionId
       }
+
+      // 检查是否需要强制新会话
+      if (sessionStore.shouldForceNewSession()) {
+        config.headers['X-Force-New-Session'] = 'true'
+        console.log('设置强制新会话标记')
+      }
     } catch (error) {
       console.warn('Failed to add session ID to request:', error)
     }

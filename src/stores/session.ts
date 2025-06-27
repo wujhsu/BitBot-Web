@@ -95,11 +95,28 @@ export const useSessionStore = defineStore('session', () => {
     try {
       sessionStorage.setItem('bidbot_session_id', newSessionId)
       localStorage.setItem('bidbot_last_session_id', newSessionId)
+      // 设置标记，表示下次请求需要强制使用新会话
+      sessionStorage.setItem('bidbot_force_new_session', 'true')
     } catch (error) {
       console.warn('Failed to save new session ID to storage:', error)
     }
 
     console.log('Session cleared and regenerated:', newSessionId)
+  }
+
+  // 检查是否需要强制新会话
+  const shouldForceNewSession = (): boolean => {
+    try {
+      const forceNew = sessionStorage.getItem('bidbot_force_new_session')
+      if (forceNew === 'true') {
+        // 清除标记，避免重复使用
+        sessionStorage.removeItem('bidbot_force_new_session')
+        return true
+      }
+    } catch (error) {
+      console.warn('Failed to check force new session flag:', error)
+    }
+    return false
   }
 
   // 验证会话ID格式
@@ -119,6 +136,7 @@ export const useSessionStore = defineStore('session', () => {
     getSessionInfo,
     renewSession,
     clearSession,
-    validateSessionId
+    validateSessionId,
+    shouldForceNewSession
   }
 })
