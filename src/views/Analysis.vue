@@ -36,7 +36,7 @@
           </p>
         </div>
         <div class="header-actions">
-          <el-button @click="toggleLayout" :type="isLayoutSwapped ? 'primary' : 'default'">
+          <el-button @click="toggleLayout" :type="!isLayoutSwapped ? 'primary' : 'default'">
             <el-icon><Switch /></el-icon>
             切换布局
           </el-button>
@@ -145,7 +145,7 @@ const isRefreshing = ref(false)
 const pollingTimer = ref<number | null>(null)
 
 // 布局和滚动相关
-const isLayoutSwapped = ref(false)
+const isLayoutSwapped = ref(true)
 const isPdfFixed = ref(false)
 const dualPaneContainer = ref<HTMLElement>()
 const headerHeight = 160 // 头部高度，根据实际情况调整
