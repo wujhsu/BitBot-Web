@@ -2,9 +2,20 @@ import axios from 'axios'
 import type { UploadFile, AnalysisTask, ApiResponse, ApiError } from '../types'
 import { useSessionStore } from '../stores/session'
 
+// 获取API基础URL
+const getApiBaseUrl = (): string => {
+  // 生产环境使用相对路径（通过nginx代理）
+  if (import.meta.env.PROD) {
+    return '/api'
+  }
+
+  // 开发环境使用本地后端
+  return 'http://localhost:8000/api'
+}
+
 // 创建axios实例
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api', // 直接连接后端API
+  baseURL: getApiBaseUrl(),
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
@@ -90,14 +101,26 @@ export const getAnalysisStatus = async (taskId: string): Promise<AnalysisTask> =
   return response.data
 }
 
+// 获取完整的API URL（用于直接访问，不通过axios实例）
+const getFullApiUrl = (path: string): string => {
+  const baseUrl = getApiBaseUrl()
+
+  // 如果是相对路径，需要加上当前域名
+  if (baseUrl.startsWith('/')) {
+    return `${window.location.origin}${baseUrl}${path}`
+  }
+
+  return `${baseUrl}${path}`
+}
+
 // 获取PDF文件URL
 export const getPdfUrl = (fileId: string): string => {
-  return `http://localhost:8000/api/pdf/${fileId}`
+  return getFullApiUrl(`/pdf/${fileId}`)
 }
 
 // 获取文件下载URL
 export const getDownloadUrl = (fileId: string, fileType: 'original' | 'pdf' = 'pdf'): string => {
-  return `http://localhost:8000/api/download/${fileId}?file_type=${fileType}`
+  return getFullApiUrl(`/download/${fileId}?file_type=${fileType}`)
 }
 
 // 健康检查API

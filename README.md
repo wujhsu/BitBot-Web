@@ -79,62 +79,43 @@ npm run build
 npm run preview
 ```
 
-### 方式二：Docker 部署（推荐新手）
+### 方式二：CICD 部署（推荐生产环境）
 
-#### 🐳 独立 Docker 部署
+#### 🚀 CICD 部署步骤
 
-**1. 构建 Docker 镜像**
+**1. 构建应用**
 ```bash
-# 在 frontend 目录下执行
-docker build -t bidbot-frontend .
+# 安装依赖
+npm install
+
+# 生产环境构建
+npm run build:prod
 ```
 
-**2. 运行容器**
-```bash
-# 基础运行
-docker run -p 80:80 bidbot-frontend
+**2. 部署到服务器**
+- 将 `dist` 目录内容部署到 Web 服务器
+- 确保 nginx 或其他 Web 服务器配置了 API 代理
+- 配置 Vue Router history 模式支持
 
-# 带环境变量运行
-docker run -p 80:80 \
-  -e API_BASE_URL=http://your-backend:8000 \
-  bidbot-frontend
-```
+#### 🐳 Docker 部署（如需要）
 
-**3. 访问应用**
-- 前端界面: http://localhost
+如果 CICD 环境需要 Docker 部署，可参考项目根目录的 `docker-compose.yml` 配置。
 
-#### 🐳 与后端一起部署
-
-**1. 返回项目根目录**
-```bash
-cd ..  # 回到 BidBot3 根目录
-```
-
-**2. 配置环境变量**
-```bash
-# 复制环境配置文件
-cp .env.example .env
-
-# 编辑配置文件，填入 API 密钥
-nano .env
-```
-
-**3. 一键部署（开发环境）**
-```bash
-# 使用部署脚本
-./deploy.sh
-
-# 或手动部署
-docker-compose up -d --build
-```
-
-**4. 一键部署（生产环境）**
-```bash
-# 需要 root 权限
-sudo ./deploy-prod.sh
-```
+**注意**：前端目录下的 `Dockerfile` 和 `nginx.conf` 已移除，避免与 CICD Pipeline 模板冲突。
 
 ## 🔧 配置说明
+
+### API 地址配置
+
+项目会根据运行环境自动选择合适的 API 地址：
+
+**开发环境**
+- 使用本地后端：`http://localhost:8000/api`
+- Vite 开发服务器会自动代理 `/api` 请求到本地后端
+
+**生产环境**
+- 使用相对路径：`/api`
+- 通过 nginx 代理到实际的后端服务
 
 ### 开发环境配置
 
@@ -144,37 +125,33 @@ export default defineConfig({
   server: {
     port: 3001,           // 开发服务器端口
     proxy: {
-      '/api': 'http://localhost:8000'  // API 代理配置
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false
+      }
     }
   }
 })
 ```
 
-### Docker 配置
+### 构建命令
 
-**Dockerfile** - 多阶段构建
-```dockerfile
-# 构建阶段：编译 Vue 应用
-FROM node:18-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-RUN npm run build
+```bash
+# 开发环境构建
+npm run build:dev
 
-# 生产阶段：Nginx 服务静态文件
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/nginx.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# 生产环境构建
+npm run build:prod
+
+# 默认构建（使用当前NODE_ENV）
+npm run build
 ```
 
-**nginx.conf** - Nginx 配置
-- Vue Router history 模式支持
-- API 请求代理到后端
-- 静态资源缓存优化
-- 安全头配置
+**注意事项**
+- 已移除 `Dockerfile` 和 `nginx.conf`，避免与 CICD Pipeline 模板冲突
+- 项目依赖 CICD 环境提供的 nginx 组件进行代理配置
+- API 地址会根据构建环境自动选择，无需手动配置
 
 ## 🌐 API 接口
 

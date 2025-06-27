@@ -14,6 +14,12 @@ dist-ssr
 coverage
 *.local
 
+# Environment variables
+# .env  # 注释掉，允许提交 CICD 部署用的 .env 文件
+.env.local
+.env.*.local
+mytest/
+
 /cypress/videos/
 /cypress/screenshots/
 
